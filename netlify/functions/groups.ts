@@ -158,7 +158,7 @@ export default handle(async (req: Request): Promise<Response> => {
         data.group.members = nextMembers;
       }
 
-      pushActivity(data, `Updated group settings`);
+      pushActivity(data, "Updated group settings");
       return data.group;
     });
     return json({ group });

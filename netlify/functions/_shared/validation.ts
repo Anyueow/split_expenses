@@ -42,15 +42,40 @@ export function slugify(value: string): string {
   return slug || "group";
 }
 
+/**
+ * One trillion minor units. Sums of many expenses must stay well inside
+ * Number.MAX_SAFE_INTEGER or the balances quietly stop netting to zero.
+ */
+export const MAX_AMOUNT_MINOR = 1_000_000_000_000;
+
 export function isPositiveInteger(value: unknown): value is number {
-  return typeof value === "number" && Number.isInteger(value) && value > 0;
+  return (
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    value > 0 &&
+    value <= MAX_AMOUNT_MINOR
+  );
 }
 
-function requireNonEmptyString(value: unknown, field: string): string {
+/** The whole database is one JSON blob, so unbounded strings are a DoS vector. */
+function requireNonEmptyString(value: unknown, field: string, maxLength = 200): string {
   if (typeof value !== "string" || value.trim().length === 0) {
     throw new HttpError(400, `${field} is required.`);
   }
-  return value.trim();
+  const trimmed = value.trim();
+  if (trimmed.length > maxLength) {
+    throw new HttpError(400, `${field} must be ${maxLength} characters or fewer.`);
+  }
+  return trimmed;
+}
+
+/** Dates are string-compared for sorting, so the format has to be exact. */
+function requireIsoDate(value: unknown, field: string): string {
+  const raw = requireNonEmptyString(value, field, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw) || Number.isNaN(Date.parse(raw))) {
+    throw new HttpError(400, `${field} must be a real date in YYYY-MM-DD form.`);
+  }
+  return raw;
 }
 
 export function requireCurrency(value: unknown): Currency {
@@ -104,7 +129,7 @@ export function validateExpenseInput(
   const currency = requireCurrency(body.currency);
   const category = requireCategory(body.category);
   const splitType = requireSplitType(body.splitType);
-  const date = requireNonEmptyString(body.date, "Date");
+  const date = requireIsoDate(body.date, "Date");
 
   const memberIds = new Set(members.map((m) => m.id));
   const paidBy = requireNonEmptyString(body.paidBy, "Payer");
@@ -205,6 +230,6 @@ export function validateSettlementInput(
     toMemberId,
     amountMinor: body.amountMinor,
     currency: requireCurrency(body.currency),
-    date: requireNonEmptyString(body.date, "Date"),
+    date: requireIsoDate(body.date, "Date"),
   };
 }

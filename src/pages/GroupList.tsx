@@ -71,21 +71,62 @@ export default function GroupList() {
       {!groups && !error && <LoadingBlock label="Loading groups…" />}
 
       {groups && groups.length === 0 && !error && (
-        <EmptyState
-          emoji="🧳"
-          title="No groups yet"
-          description="Create one for your next trip, then start adding expenses."
-          action={
-            <button
-              type="button"
-              onClick={() => setCreating(true)}
-              className="btn-primary px-5"
-            >
-              <Plus aria-hidden className="h-4 w-4" />
-              New group
-            </button>
-          }
-        />
+        <div className="animate-fade-in">
+          <EmptyState
+            emoji="🧳"
+            title="Welcome to SplitEasy"
+            description="Track what everyone spends on a trip, and settle up with the fewest payments at the end."
+            action={
+              <button
+                type="button"
+                onClick={() => setCreating(true)}
+                className="btn-primary px-5"
+              >
+                <Plus aria-hidden className="h-4 w-4" />
+                Create your first group
+              </button>
+            }
+          />
+
+          <ol className="mx-auto mt-2 max-w-sm space-y-3">
+            {[
+              {
+                title: "Make a group",
+                body: "Name the trip and add everyone by name — no accounts, no invites to chase.",
+              },
+              {
+                title: "Add expenses as you go",
+                body: "Say who paid and how it splits: equally, by percentage, or exact amounts.",
+              },
+              {
+                title: "Settle up at the end",
+                body: "SplitEasy works out the shortest set of payments that clears everyone.",
+              },
+            ].map((step, i) => (
+              <li key={step.title} className="card flex gap-3 p-4">
+                <span
+                  aria-hidden
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-light text-sm font-semibold text-primary"
+                >
+                  {i + 1}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold text-neutral-900">
+                    {step.title}
+                  </span>
+                  <span className="mt-0.5 block text-sm leading-relaxed text-neutral-500">
+                    {step.body}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+
+          <p className="mx-auto mt-4 max-w-sm text-center text-xs leading-relaxed text-neutral-500">
+            Everyone with the password shares this space — open the same link on any
+            phone or laptop and you will see the same groups.
+          </p>
+        </div>
       )}
 
       {groups && groups.length > 0 && (

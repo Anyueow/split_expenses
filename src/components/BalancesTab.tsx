@@ -125,7 +125,7 @@ export function BalancesTab({
             <EmptyState
               emoji="🎉"
               title="All settled up"
-              description="Nobody owes anybody anything right now."
+              description="Nobody owes anybody anything right now. Add an expense and this fills in with who should pay whom."
             />
           </div>
         ) : (

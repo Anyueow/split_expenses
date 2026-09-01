@@ -226,6 +226,9 @@ export function deleteSettlement(
 /* ---- Export ------------------------------------------------------------ */
 
 /** A plain navigation, so the browser handles the Content-Disposition download. */
-export function exportCsvUrl(groupId: string): string {
-  return `/api/groups/${groupId}/export`;
+/** Pass a memberId to get that person's point of view: only the expenses they
+ *  were part of, plus their own paid/share/net columns. */
+export function exportCsvUrl(groupId: string, memberId?: string): string {
+  const base = `/api/groups/${groupId}/export`;
+  return memberId ? `${base}?memberId=${encodeURIComponent(memberId)}` : base;
 }

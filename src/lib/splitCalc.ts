@@ -66,9 +66,21 @@ export function computePercentageSplits(
     return (orderIndex.get(a.memberId) ?? 0) - (orderIndex.get(b.memberId) ?? 0);
   });
 
+  // Percentages that round to 100% can still be fractionally over it (e.g.
+  // 33.334 x3), which floors to more than the total and would invent money.
+  // A positive remainder is handed out largest-fraction-first; a negative one
+  // is clawed back smallest-fraction-first, so the shares always sum exactly.
+  if (byPriority.length === 0) return [];
+
   const bonus = new Map<string, number>();
-  for (let i = 0; i < byPriority.length && remainder > 0; i++, remainder--) {
-    bonus.set(byPriority[i].memberId, 1);
+  const bump = (id: string, delta: number) => bonus.set(id, (bonus.get(id) ?? 0) + delta);
+  // Cycles rather than making a single pass, so drift larger than one unit per
+  // participant still resolves exactly.
+  for (let i = 0; remainder > 0; i = (i + 1) % byPriority.length, remainder--) {
+    bump(byPriority[i].memberId, 1);
+  }
+  for (let i = byPriority.length - 1; remainder < 0; i = (i + byPriority.length - 1) % byPriority.length, remainder++) {
+    bump(byPriority[i].memberId, -1);
   }
 
   return raw.map((r) => ({

@@ -40,7 +40,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? labelledBy : undefined}
-        className="animate-slide-up relative w-full max-w-md rounded-t-3xl bg-white p-5 pb-[calc(1.25rem+var(--safe-bottom))] shadow-xl sm:rounded-3xl sm:pb-5"
+        className="animate-slide-up relative flex max-h-[85dvh] w-full max-w-md flex-col overflow-y-auto rounded-t-3xl bg-white p-5 pb-[calc(1.25rem+var(--safe-bottom))] shadow-xl sm:rounded-3xl sm:pb-5"
       >
         {title && (
           <h2 id={labelledBy} className="mb-4 text-lg text-neutral-900">

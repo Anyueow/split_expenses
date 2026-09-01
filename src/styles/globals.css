@@ -7,6 +7,8 @@
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --tabbar-height: 60px;
+    /* Left nav on md+; the bottom tab bar takes over below that. */
+    --sidebar-width: 240px;
   }
 
   html {

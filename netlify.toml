@@ -1,0 +1,62 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/auth"
+  to = "/.netlify/functions/auth"
+  status = 200
+
+[[redirects]]
+  from = "/api/auth/logout"
+  to = "/.netlify/functions/auth?action=logout"
+  status = 200
+
+[[redirects]]
+  from = "/api/groups"
+  to = "/.netlify/functions/groups"
+  status = 200
+
+[[redirects]]
+  from = "/api/groups/:id"
+  to = "/.netlify/functions/groups?groupId=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/groups/:id/expenses"
+  to = "/.netlify/functions/expenses?groupId=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/groups/:id/expenses/:eid"
+  to = "/.netlify/functions/expenses?groupId=:id&expenseId=:eid"
+  status = 200
+
+[[redirects]]
+  from = "/api/groups/:id/balances"
+  to = "/.netlify/functions/balances?groupId=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/groups/:id/settlements"
+  to = "/.netlify/functions/settlements?groupId=:id"
+  status = 200
+
+[[redirects]]
+  from = "/api/groups/:id/settlements/:sid"
+  to = "/.netlify/functions/settlements?groupId=:id&settlementId=:sid"
+  status = 200
+
+[[redirects]]
+  from = "/api/groups/:id/export"
+  to = "/.netlify/functions/export?groupId=:id"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

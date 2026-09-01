@@ -108,7 +108,9 @@ const created = await call("/groups", {
   body: JSON.stringify({
     name: group.name,
     currency: group.currency,
-    members: group.members.map((m) => ({ name: m.name, color: m.color })),
+    // POST /groups takes plain names; colours are assigned server-side in the
+    // same order, so they come out matching the source group.
+    members: group.members.map((m) => m.name),
   }),
 });
 
@@ -130,7 +132,9 @@ const ordered = [...expenses].sort((a, b) => (a.date < b.date ? -1 : a.date > b.
 
 let done = 0;
 for (const e of ordered) {
-  await call(`/groups/${newGroup.id}/expenses`, {
+  // groupId is passed explicitly rather than relying on the :id redirect
+  // placeholder, which does not substitute on Netlify's production edge.
+  await call(`/groups/${newGroup.id}/expenses?groupId=${encodeURIComponent(newGroup.id)}`, {
     method: "POST",
     body: JSON.stringify({
       description: e.description,
@@ -154,7 +158,9 @@ for (const e of ordered) {
 console.log("");
 
 // Verify the destination agrees with the source before declaring success.
-const check = await call(`/groups/${newGroup.id}/balances`);
+const check = await call(
+  `/groups/${newGroup.id}/balances?groupId=${encodeURIComponent(newGroup.id)}`
+);
 const nets = Object.values(check.nets ?? {});
 const sum = nets.reduce((s, n) => s + n, 0);
 

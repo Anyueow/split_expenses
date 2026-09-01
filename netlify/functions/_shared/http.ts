@@ -56,10 +56,32 @@ export function handle(fn: Handler): Handler {
   };
 }
 
+/**
+ * Pulls an id out of the request path as a fallback for the query string.
+ *
+ * The netlify.toml redirects carry ids across as query params
+ * (`/api/groups/:id/expenses` -> `expenses?groupId=:id`), and that substitution
+ * works under `netlify dev` but not on the deployed edge, where the function
+ * runs with the placeholder unresolved. Rather than depend on redirect
+ * semantics, read the id straight off `/api/groups/<id>/<section>/<subId>`.
+ */
+function pathParam(req: Request, name: string): string | undefined {
+  const segments = new URL(req.url).pathname.split("/").filter(Boolean);
+  const groupsAt = segments.indexOf("groups");
+  if (groupsAt === -1) return undefined;
+
+  if (name === "groupId") return segments[groupsAt + 1];
+
+  const section = { expenseId: "expenses", settlementId: "settlements" }[name];
+  if (!section || segments[groupsAt + 2] !== section) return undefined;
+  return segments[groupsAt + 3];
+}
+
 /** Reads a query param, tolerating the function being hit directly with extra path segments. */
 export function queryParam(req: Request, name: string): string | undefined {
   const value = new URL(req.url).searchParams.get(name);
-  return value === null || value === "" ? undefined : value;
+  if (value !== null && value !== "" && !value.startsWith(":")) return value;
+  return pathParam(req, name);
 }
 
 export function requireQueryParam(req: Request, name: string): string {

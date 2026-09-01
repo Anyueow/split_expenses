@@ -78,9 +78,9 @@ export function PasswordGate({
               className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-100"
             >
               {visible ? (
-                <EyeOff aria-hidden className="h-4.5 w-4.5" />
+                <EyeOff aria-hidden className="h-[18px] w-[18px]" />
               ) : (
-                <Eye aria-hidden className="h-4.5 w-4.5" />
+                <Eye aria-hidden className="h-[18px] w-[18px]" />
               )}
             </button>
           </div>

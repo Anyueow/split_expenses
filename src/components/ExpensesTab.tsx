@@ -54,6 +54,8 @@ export function ExpensesTab({
     setError(null);
     try {
       await api.deleteExpense(group.id, expense.id);
+      // Let the fade-out finish before the row leaves the list.
+      await new Promise((resolve) => window.setTimeout(resolve, 180));
       onExpensesChange(expenses.filter((e) => e.id !== expense.id));
       await onChanged();
     } catch (err) {

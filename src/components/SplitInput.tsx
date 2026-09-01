@@ -116,21 +116,24 @@ function EqualPreview({
     participants.map((m) => m.id),
     allMembers
   );
-  const byMember = new Map(splits.map((s) => [s.memberId, s.amountMinor ?? 0]));
-  const uniqueShares = new Set(byMember.values());
+  const shares = splits.map((s) => s.amountMinor ?? 0);
+  const min = Math.min(...shares);
+  const max = Math.max(...shares);
 
   return (
     <div className="rounded-xl bg-primary-light p-4 text-center">
       <p className="amount text-xl text-primary">
-        {formatMoney(byMember.get(participants[0].id) ?? 0, currency)}
+        {min === max
+          ? formatMoney(min, currency)
+          : `${formatMoney(min, currency)} – ${formatMoney(max, currency)}`}
       </p>
       <p className="mt-1 text-sm text-primary/70">
         each · {participants.length} {participants.length === 1 ? "person" : "people"}
       </p>
-      {uniqueShares.size > 1 && (
+      {min !== max && (
         <p className="mt-2 text-xs text-primary/70">
-          Rounding leftovers are spread a cent at a time, so shares differ by at most
-          0.01.
+          The total doesn&rsquo;t divide evenly, so the leftover is spread a cent at a
+          time.
         </p>
       )}
     </div>

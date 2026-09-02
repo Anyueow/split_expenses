@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowDownWideNarrow, Plus, Search, X } from "lucide-react";
+import { ArrowDownWideNarrow, Plus, Search, Users, X } from "lucide-react";
 import { ExpenseCard } from "./ExpenseCard";
 import { CategoryFilter } from "./CategoryPicker";
 import { EmptyState } from "./EmptyState";
@@ -33,6 +33,7 @@ export function ExpensesTab({
   const [filter, setFilter] = useState<Category | "all">("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortId>("date-desc");
+  const [paidBy, setPaidBy] = useState<string>("all");
   const [pendingDelete, setPendingDelete] = useState<Expense | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +42,11 @@ export function ExpensesTab({
     () => [...new Set(expenses.map((e) => e.category))],
     [expenses]
   );
+
+  const payers = useMemo(() => {
+    const ids = new Set(expenses.map((e) => e.paidBy));
+    return group.members.filter((m) => ids.has(m.id));
+  }, [expenses, group.members]);
 
   const memberName = useMemo(
     () => new Map(group.members.map((m) => [m.id, m.name.toLowerCase()])),
@@ -53,6 +59,7 @@ export function ExpensesTab({
     const q = query.trim().toLowerCase();
     return expenses.filter((e) => {
       if (filter !== "all" && e.category !== filter) return false;
+      if (paidBy !== "all" && e.paidBy !== paidBy) return false;
       if (!q) return true;
       return (
         e.description.toLowerCase().includes(q) ||
@@ -62,7 +69,13 @@ export function ExpensesTab({
         (e.amountMinor / 100).toFixed(2).includes(q)
       );
     });
-  }, [expenses, filter, query, memberName]);
+  }, [expenses, filter, paidBy, query, memberName]);
+
+  // A payer can disappear if the last expense they paid for is deleted, or if
+  // they are removed from the group; fall back rather than showing nothing.
+  useEffect(() => {
+    if (paidBy !== "all" && !payers.some((m) => m.id === paidBy)) setPaidBy("all");
+  }, [payers, paidBy]);
 
   const sorted = useMemo(() => {
     const list = [...visible];
@@ -144,6 +157,33 @@ export function ExpensesTab({
         </span>
       </div>
 
+      {payers.length > 1 && (
+        <div className="mb-3">
+          <label htmlFor="expense-payer" className="label">
+            Paid by
+          </label>
+          <div className="relative">
+            <Users
+              aria-hidden
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500"
+            />
+            <select
+              id="expense-payer"
+              value={paidBy}
+              onChange={(e) => setPaidBy(e.target.value)}
+              className="w-full appearance-none rounded-xl border border-[#E9E9F2] bg-white py-2.5 pl-9 pr-3 text-base text-neutral-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="all">Anyone</option>
+              {payers.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
       <div className="mb-3">
         <label htmlFor="expense-sort" className="label">
           Sort by
@@ -212,11 +252,11 @@ export function ExpensesTab({
       {visible.length === 0 ? (
         <EmptyState
           emoji="🔍"
-          title={query ? `No match for "${query}"` : "Nothing in that category"}
+          title={query ? `No match for "${query}"` : "Nothing to show"}
           description={
             query
-              ? "Try a different search term, or clear the category filter."
-              : "Try a different filter to see more expenses."
+              ? "Try a different search term, or widen the filters."
+              : "No expenses match these filters — try widening them."
           }
         />
       ) : (
